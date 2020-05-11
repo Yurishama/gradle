@@ -325,10 +325,12 @@ class MavenPublishHttpIntegTest extends AbstractMavenPublishIntegTest {
     @ToBeFixedForInstantExecution
     def "can publish to authenticated repository using Providers to supply credentials"() {
         given:
+        String mavenUserProperty = 'mavenUser'
+        String mavenPasswordProperty = 'mavenPassword'
         String credentialsBlock = """
             credentials {
-                username = providers.gradleProperty('mavenUser')
-                password = providers.gradleProperty('mavenPassword')
+                username = providers.gradleProperty('$mavenUserProperty')
+                password = providers.gradleProperty('$mavenPasswordProperty')
             }
         """
         buildFile << publicationBuild(version, group, mavenRemoteRepo.uri, credentialsBlock)
@@ -339,7 +341,7 @@ class MavenPublishHttpIntegTest extends AbstractMavenPublishIntegTest {
         expectPublishModuleWithCredentials(module, credentials)
 
         when:
-        executer.withArguments("-PmavenUser=${credentials.username}", "-PmavenPassword=${credentials.password}")
+        executer.withArguments("-P$mavenUserProperty=${credentials.username}", "-P$mavenPasswordProperty=${credentials.password}")
         succeeds 'publish'
 
         then:
