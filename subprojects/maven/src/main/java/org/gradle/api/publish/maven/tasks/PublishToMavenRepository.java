@@ -36,9 +36,6 @@ import org.gradle.internal.credentials.DefaultPasswordCredentials;
 public class PublishToMavenRepository extends AbstractPublishToMaven {
     private MavenArtifactRepository repository;
 
-    public PublishToMavenRepository() {
-    }
-
     /**
      * The repository to publish to.
      *
