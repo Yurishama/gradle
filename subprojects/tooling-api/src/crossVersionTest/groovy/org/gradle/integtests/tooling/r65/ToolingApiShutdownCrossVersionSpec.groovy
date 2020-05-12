@@ -175,6 +175,72 @@ class ToolingApiShutdownCrossVersionSpec extends CancellationSpec {
         assertNoRunningDaemons()
     }
 
+    def "disconnect doesn't stop other running builds abruptly"() {
+        setup:
+        buildFile << """
+            task hang {
+                doLast {
+                    ${server.callFromBuild("waiting")}
+                }
+            }
+        """.stripIndent()
+
+        file("otherBuild/build.gradle") << """
+            task hang {
+                doLast {
+                    ${server.callFromBuild("other-waiting")}
+                }
+            }
+            gradle.buildFinished {
+                ${server.callFromBuild("other-finished")}
+            }
+        """.stripIndent()
+
+        file("otherBuild/settings.gradle") << """
+            rootProject.name = "otherBuild"
+        """.stripIndent()
+
+        def sync = server.expectConcurrentAndBlock("waiting", "other-waiting")
+        def finished = server.expectAndBlock("other-finished")
+        def resultHandler = new TestResultHandler()
+
+        // Executer to run another build outside of TAPI
+        def executer = toolingApi.createExecuter()
+        executer.requireDaemon()
+        executer.inDirectory(file("otherBuild"))
+        assert executer.getDaemonBaseDir() == toolingApi.getDaemonBaseDir()
+
+        when:
+        GradleConnector connector = toolingApi.connector()
+        ProjectConnection connection = connector.connect() // using withConnection would call close after the closure
+
+        // Start build with TAPI
+        def build = connection.newBuild()
+        build.forTasks('hang')
+        build.run(resultHandler)
+
+        // Start build with non-TAPI
+        executer.withTasks("hang")
+        def handle = executer.start()
+
+        // Wait for both to get to the "hang" state
+        sync.waitForAllPendingCalls(resultHandler)
+        sync.releaseAll()
+
+        // Stop the TAPI side
+        connector.disconnect()
+        resultHandler.finished()
+
+        // Wait for other build to finish
+        finished.waitForAllPendingCalls()
+        finished.releaseAll()
+        def finish = handle.waitForFinish()
+
+        then:
+        finish.assertTasksExecuted(":hang")
+        assertNoRunningDaemons()
+    }
+
     def "can call disconnect after the build was cancelled"() {
         buildFile << """
             task hang {
