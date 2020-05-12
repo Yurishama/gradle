@@ -46,7 +46,7 @@ public class DefaultGradlePropertiesLoaderTest {
     private File gradleInstallationHomeDir;
     private Map<String, String> systemProperties = new HashMap<>();
     private Map<String, String> envProperties = new HashMap<>();
-    private StartParameterInternal startParameter = new StartParameterInternal();
+    private final StartParameterInternal startParameter = new StartParameterInternal();
     @Rule
     public TestNameTestDirectoryProvider tmpDir = new TestNameTestDirectoryProvider(getClass());
     @Rule
@@ -207,7 +207,7 @@ public class DefaultGradlePropertiesLoaderTest {
     }
 
     @Test
-    public void loadSetsSystemProperties() {
+    public void loadDoesNotSetSystemProperties() {
         startParameter.setSystemPropertiesArgs(WrapUtil.toMap("systemPropArgKey", "systemPropArgValue"));
         writePropertyFile(gradleUserHomeDir, Cast.uncheckedNonnullCast(GUtil.map(SYSTEM_PROP_PREFIX + ".userSystemProp", "userSystemValue")));
         writePropertyFile(settingsDir, Cast.uncheckedNonnullCast(GUtil.map(
@@ -216,9 +216,9 @@ public class DefaultGradlePropertiesLoaderTest {
 
         loadProperties();
 
-        assertEquals("userSystemValue", System.getProperty("userSystemProp"));
-        assertEquals("settingsSystemValue2", System.getProperty("settingsSystemProp2"));
-        assertEquals("systemPropArgValue", System.getProperty("systemPropArgKey"));
+        assertNull(System.getProperty("userSystemProp"));
+        assertNull(System.getProperty("settingsSystemProp2"));
+        assertNull(System.getProperty("systemPropArgKey"));
     }
 
     @Test
@@ -263,9 +263,9 @@ public class DefaultGradlePropertiesLoaderTest {
         systemProperties = Cast.uncheckedNonnullCast(GUtil.map("prop", "system value"));
         startParameter.setSystemPropertiesArgs(WrapUtil.toMap("prop", "commandline value"));
 
-        loadProperties();
+        GradleProperties loadedProperties = loadProperties();
 
-        assertEquals("commandline value", System.getProperty("prop"));
+        assertEquals("commandline value", loadedProperties.find("systemProp.prop"));
     }
 
     private Map<String, String> loadAndMergePropertiesWith(Map<String, String> properties) {

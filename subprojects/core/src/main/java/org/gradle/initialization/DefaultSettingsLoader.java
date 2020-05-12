@@ -53,7 +53,7 @@ public class DefaultSettingsLoader implements SettingsLoader {
         StartParameter startParameter = gradle.getStartParameter();
 
         SettingsLocation settingsLocation = buildLayoutFactory.getLayoutFor(new BuildLayoutConfiguration(startParameter));
-        loadGradlePropertiesFrom(settingsLocation);
+        gradlePropertiesController.loadGradlePropertiesFrom(settingsLocation.getSettingsDir());
 
         SettingsInternal settings = findSettingsAndLoadIfAppropriate(gradle, startParameter, settingsLocation, gradle.getClassLoaderScope());
         ProjectSpec spec = ProjectSpecs.forStartParameter(startParameter, settings);
@@ -63,12 +63,6 @@ public class DefaultSettingsLoader implements SettingsLoader {
 
         setDefaultProject(spec, settings);
         return settings;
-    }
-
-    private void loadGradlePropertiesFrom(SettingsLocation settingsLocation) {
-        gradlePropertiesController.loadGradlePropertiesFrom(
-            settingsLocation.getSettingsDir()
-        );
     }
 
     private boolean useEmptySettings(ProjectSpec spec, SettingsInternal loadedSettings, StartParameter startParameter) {

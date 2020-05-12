@@ -51,10 +51,7 @@ public class DefaultGradlePropertiesLoader implements IGradlePropertiesLoader {
         addGradleProperties(defaultProperties, new File(rootDir, GRADLE_PROPERTIES));
         addGradleProperties(overrideProperties, new File(startParameter.getGradleUserHomeDir(), GRADLE_PROPERTIES));
 
-        addSystemPropertiesFromGradleProperties(defaultProperties);
-        addSystemPropertiesFromGradleProperties(overrideProperties);
-        System.getProperties().putAll(startParameter.getSystemPropertiesArgs());
-
+        overrideProperties.putAll(getPropertiesFromStartParameterSystemProperties(startParameter));
         overrideProperties.putAll(getEnvProjectProperties(envProperties));
         overrideProperties.putAll(getSystemProjectProperties(systemProperties));
         overrideProperties.putAll(startParameter.getProjectProperties());
@@ -79,6 +76,19 @@ public class DefaultGradlePropertiesLoader implements IGradlePropertiesLoader {
         }
     }
 
+    private Map<String, String> getPropertiesFromStartParameterSystemProperties(StartParameterInternal startParameter) {
+        Map<String, String> startParamProps = new HashMap<>();
+        for (Map.Entry<String, String> entry : startParameter.getSystemPropertiesArgs().entrySet()) {
+            String name = entry.getKey();
+            if (name.startsWith(SYSTEM_PROJECT_PROPERTIES_PREFIX) && name.length() > SYSTEM_PROJECT_PROPERTIES_PREFIX.length()) {
+                startParamProps.put(name.substring(SYSTEM_PROJECT_PROPERTIES_PREFIX.length()), entry.getValue());
+            } else {
+                startParamProps.put(Project.SYSTEM_PROP_PREFIX + '.' + name, entry.getValue());
+            }
+        }
+        return startParamProps;
+    }
+
     private Map<String, String> getSystemProjectProperties(Map<String, String> systemProperties) {
         Map<String, String> systemProjectProperties = new HashMap<>();
         for (Map.Entry<String, String> entry : systemProperties.entrySet()) {
@@ -99,13 +109,5 @@ public class DefaultGradlePropertiesLoader implements IGradlePropertiesLoader {
         }
         LOGGER.debug("Found env project properties: {}", envProjectProperties.keySet());
         return envProjectProperties;
-    }
-
-    private void addSystemPropertiesFromGradleProperties(Map<String, String> properties) {
-        for (String key : properties.keySet()) {
-            if (key.startsWith(Project.SYSTEM_PROP_PREFIX + '.')) {
-                System.setProperty(key.substring((Project.SYSTEM_PROP_PREFIX + '.').length()), properties.get(key));
-            }
-        }
     }
 }
