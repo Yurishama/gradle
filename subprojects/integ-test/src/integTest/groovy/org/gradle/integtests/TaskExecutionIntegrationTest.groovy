@@ -59,6 +59,15 @@ class TaskExecutionIntegrationTest extends AbstractIntegrationSpec {
         assert graph.allTasks.contains(b)
         notified = true
     }
+    
+    gradle.buildFinished {
+        assert gradle.taskGraph.hasTask(':a')
+        assert gradle.taskGraph.hasTask(a)
+        assert gradle.taskGraph.hasTask(':b')
+        assert gradle.taskGraph.hasTask(b)
+        assert gradle.taskGraph.allTasks.contains(a)
+        assert gradle.taskGraph.allTasks.contains(b)        
+    }
 """
         expect:
         2.times {
