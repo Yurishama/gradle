@@ -91,6 +91,7 @@ public class StartParameter implements LoggingConfiguration, ParallelismConfigur
     private boolean refreshDependencies;
     private boolean buildCacheEnabled;
     private boolean buildCacheDebugLogging;
+    protected boolean configurationCacheEnabled;
     private boolean configureOnDemand;
     private boolean continuous;
     private List<File> includedBuilds = new ArrayList<>();
@@ -250,6 +251,7 @@ public class StartParameter implements LoggingConfiguration, ParallelismConfigur
         p.refreshDependencies = refreshDependencies;
         p.setParallelProjectExecutionEnabled(isParallelProjectExecutionEnabled());
         p.buildCacheEnabled = buildCacheEnabled;
+        p.configurationCacheEnabled = configurationCacheEnabled;
         p.configureOnDemand = configureOnDemand;
         p.setMaxWorkerCount(getMaxWorkerCount());
         p.systemPropertiesArgs = new HashMap<>(systemPropertiesArgs);
@@ -715,6 +717,16 @@ public class StartParameter implements LoggingConfiguration, ParallelismConfigur
      */
     public void setBuildCacheDebugLogging(boolean buildCacheDebugLogging) {
         this.buildCacheDebugLogging = buildCacheDebugLogging;
+    }
+
+    /**
+     * Returns true if the configuration cache is enabled.
+     *
+     * @since 6.5
+     */
+    @Incubating
+    public boolean isConfigurationCacheEnabled() {
+        return this.configurationCacheEnabled;
     }
 
     /**

@@ -74,4 +74,8 @@ public class StartParameterInternal extends StartParameter implements Deprecatab
     public void setSearchUpwardsWithoutDeprecationWarning(boolean searchUpwards) {
         super.searchUpwards = searchUpwards;
     }
+
+    public void setConfigurationCacheEnabled(boolean configurationCacheEnabled) {
+        this.configurationCacheEnabled = configurationCacheEnabled;
+    }
 }
