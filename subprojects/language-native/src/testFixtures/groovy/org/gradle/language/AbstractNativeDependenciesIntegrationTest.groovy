@@ -30,7 +30,8 @@ abstract class AbstractNativeDependenciesIntegrationTest extends AbstractInstall
     @ToBeFixedForInstantExecution(bottomSpecs = [
         'CppUnitTestDependenciesIntegrationTest',
         'CppApplicationDependenciesIntegrationTest',
-        'CppLibraryDependenciesIntegrationTest'
+        'CppLibraryDependenciesIntegrationTest',
+        'XCTestDependenciesIntegrationTest'
     ])
     def "can define implementation dependencies on component"() {
         given:
